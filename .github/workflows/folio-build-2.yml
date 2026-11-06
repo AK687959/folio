@@ -10,7 +10,7 @@ permissions:
 jobs:
   build:
     name: Build Android APK
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     steps:
       - name: Checkout Folio source
@@ -29,14 +29,17 @@ jobs:
 
       - name: Set up Android SDK
         uses: android-actions/setup-android@v4
-        with:
-          accept-android-sdk-licenses: 'yes'
-          packages: 'platforms;android-37'
+
+      - name: Accept Android SDK licences
+        run: yes | sdkmanager --licenses
+
+      - name: Install Android SDK platform
+        run: sdkmanager "platforms;android-37"
 
       - name: Install Folio dependencies
         run: bun install --frozen-lockfile
 
-      - name: Build Folio debug APK
+      - name: Build Folio APK
         run: bun run build:android
 
       - name: Upload Folio APK
