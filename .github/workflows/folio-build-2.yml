@@ -29,17 +29,14 @@ jobs:
 
       - name: Set up Android SDK
         uses: android-actions/setup-android@v4
-
-      - name: Accept Android SDK licences
-        run: yes | sdkmanager --licenses
-
-      - name: Install Android SDK platform
-        run: sdkmanager "platforms;android-37"
+        with:
+          accept-android-sdk-licenses: 'true'
+          packages: 'platform-tools platforms;android-37.0'
 
       - name: Install Folio dependencies
         run: bun install --frozen-lockfile
 
-      - name: Build Folio APK
+      - name: Build Folio debug APK
         run: bun run build:android
 
       - name: Upload Folio APK
