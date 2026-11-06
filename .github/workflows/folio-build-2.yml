@@ -33,6 +33,38 @@ jobs:
           accept-android-sdk-licenses: 'true'
           packages: 'platform-tools platforms;android-37.0'
 
+      - name: Configure Android SDK location
+        shell: bash
+        run: |
+          SDK_ROOT="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-}}"
+
+          if [[ -z "$SDK_ROOT" || ! -d "$SDK_ROOT" ]]; then
+            SDKMANAGER="$(command -v sdkmanager || true)"
+
+            if [[ -z "$SDKMANAGER" ]]; then
+              echo "ERROR: Cannot locate Android SDK or sdkmanager."
+              exit 1
+            fi
+
+            SDK_ROOT="$(cd "$(dirname "$SDKMANAGER")/../../.." && pwd)"
+          fi
+
+          if [[ ! -d "$SDK_ROOT/platforms" ]]; then
+            echo "ERROR: Android SDK platforms directory not found at $SDK_ROOT"
+            exit 1
+          fi
+
+          echo "Android SDK found at: $SDK_ROOT"
+
+          printf 'sdk.dir=%s\n' "$SDK_ROOT" > apps/mobile/local.properties
+
+          echo "ANDROID_HOME=$SDK_ROOT" >> "$GITHUB_ENV"
+          echo "ANDROID_SDK_ROOT=$SDK_ROOT" >> "$GITHUB_ENV"
+
+          if [[ -d "$SDK_ROOT/platforms/android-37.0" ]] && [[ ! -e "$SDK_ROOT/platforms/android-37" ]]; then
+            ln -s android-37.0 "$SDK_ROOT/platforms/android-37"
+          fi
+
       - name: Install Folio dependencies
         run: bun install --frozen-lockfile
 
